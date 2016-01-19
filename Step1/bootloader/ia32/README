@@ -1,0 +1,128 @@
+
+This is a home-brewed bootloader, working out of the Master Boot Record (MBR).
+This bootloader does not support partitions, it sees the disk as one contiguous
+disk. The loader only needs one sector and it assumes that there is an ELF 
+executable to load from the second sector onward.
+
+As a sample, we provide a simple kernel that only supports an echo console
+on the serial line COM1. This is of course just a sample and it is certainly
+not a complete kernel.
+
+=====================================================================
+The Boot Loader
+---------------------------------------------------------------------
+boot.S:
+The startup code is located in 0x7C00, as defined by the convention of 
+the BIOS MBR boot sequence. Notice in the makefile that we tag the MBR
+with the proper 0x55AA tag in the last two bytes.
+
+The stack is set from 0x7C00, growing downward.
+Then, the code switches the processor from 16bit to 32bit mode. 
+And then from real to protected mode, setting up 
+the various segments that are necessary in protected mode.
+Finally, the assembly part ends, calling the C function "diskboot"
+
+---------------------------------------------------------------------
+loader.c:
+This is the C code to read an ELF executable file, from the disk, 
+starting at sector 1. The ELF file sections will be loaded in memory
+where they expect to be and the loader will jump to the entry point.
+
+=====================================================================
+The Sample Kernel:
+---------------------------------------------------------------------
+
+A very simple program that sets a simple echo console on COM1.
+Notice that we did not setup interruptions, so this is an active
+polling! Expect to hear your fan ramping up real quick...
+
+crt0.S:
+A minimal C-environment initialization (stack and zero'ed bss).
+
+main.c:
+Just an echo through the serial line.
+
+=====================================================================
+Launching with QEMU:
+
+   $> qemu-system-i386 -serial stdio -hda hda.img
+   
+
+=====================================================================
+Debugging with QEMU
+---------------------------------------------------------------------
+
+The Makefile compiles with -g, so all the code can be debugged with gdb. 
+Fortunately, qemu includes a gdb stub, so we can actually debug from the
+very first instruction.
+
+Regular launch with Qemu:
+
+    $> qemu-system-i386 -serial stdio -hda $@
+
+Debug with Qemu:
+
+    $> qemu-system-i386 -serial stdio -hda hda.img -S -s 
+
+and in another window:
+
+    $> gdb 
+    ...
+    Breakpoint 1 at 0x7c00: file boot.S, line 37.
+    Breakpoint 2 at 0x7c56: file boot.S, line 116.
+    Breakpoint 3 at 0x7db5: file loader.c, line 121.
+    0x0000fff0 in ?? ()
+    (gdb) cont
+
+Assuming the following .gdbinit:
+
+     set non-stop off
+     symbol boot.elf
+     br *0x7c00
+     br protcseg
+     br diskboot
+     target remote:1234
+
+You will see:
+
+    Breakpoint 1, start () at boot.S:37
+    37			cli				# Disable interrupts
+    (gdb) cont
+    Continuing.
+
+    Breakpoint 2, protcseg () at boot.S:116
+    116			movw	$PROT_MODE_DSEG, %ax	# Our data segment selector
+    (gdb) cont
+    Continuing.
+
+    Breakpoint 3, diskboot (start_eax=1785688930, start_ebx=129984) at loader.c:121
+    121	void diskboot(uint32_t start_eax, uint32_t start_ebx) {
+    (gdb) n
+    124	  entry_point = load_elf();
+    (gdb) n
+    133	  __asm__("jmp *%%ecx": :"a"(eax), "b"(ebx), "c"(ecx));
+
+Now, you are about to change from the boot.elf to the kernel.elf,
+that is, you need to tell gdb that the executable will change.
+This is as simple as asking gdb to load another symbol table:
+
+    (gdb) symbol kernel.elf
+    Load new symbol table from "kernel.elf"? (y or n) y
+    Reading symbols from kernel.elf...done.
+
+You can set a new breakpoint in kmain (the C entry point):
+
+    (gdb) br kmain
+    Breakpoint 4 at 0x1006d: file console.c, line 39.
+    (gdb) cont
+    Continuing.
+
+    Breakpoint 4, kmain () at console.c:39
+    39	void kmain(void) {
+    (gdb) 
+
+And here you are... in kmain(void), in the sample console program.
+Of course, you can use another disk image with whatever kernel you wish.
+
+Have fun.
+Pr Olivier Gruber.

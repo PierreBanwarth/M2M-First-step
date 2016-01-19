@@ -1,0 +1,201 @@
+
+loader.c,268
+#define ELF_EHDR 20,744
+#define ELF_PHDR 21,772
+#define ELF_MACH 22,800
+#define ELF_OFFSET 24,831
+#define SECTSIZE	25,884
+#define ELFHDR	26,905
+void waitdisk(29,969
+void readsect(36,1089
+void readseg(59,1605
+uint32_t load_elf(81,2170
+void diskboot(122,3278
+
+kprintf.c,911
+typedef unsigned long long uintmax_t;42,2063
+typedef long long intmax_t;43,2101
+typedef unsigned int uintmax_t;45,2135
+typedef int intmax_t;46,2167
+typedef unsigned char u_char;48,2196
+typedef unsigned int u_int;49,2226
+typedef unsigned long u_long;50,2254
+typedef unsigned short u_short;51,2284
+typedef unsigned long long u_quad_t;52,2316
+typedef long long quad_t;53,2353
+typedef unsigned long uintptr_t;54,2379
+typedef long ptrdiff_t;55,2412
+typedef unsigned int size_t;56,2436
+typedef int ssize_t;57,2465
+#define NULL 58,2486
+#define NBBY 60,2509
+char const hex2ascii_data[hex2ascii_data61,2572
+#define hex2ascii(62,2642
+#define va_list 63,2688
+#define va_start 64,2722
+#define va_arg 65,2758
+#define va_end 66,2790
+#define toupper(67,2822
+strlen(70,2908
+#define MAXNBUF 78,3067
+ksprintn(87,3412
+kvprintf(128,4461
+#define PCHAR(130,4550
+#undef PCHAR437,11390
+kprintf(443,11452
+
+main.c,370
+typedef unsigned char uint8_t;18,723
+typedef unsigned short uint16_t;19,754
+#define COM1 21,788
+#define COM2 22,819
+uint8_t inb(25,922
+void outb(32,1117
+static void serial_init(37,1224
+void serial_write_char(55,1770
+void serial_write_string(61,1883
+char serial_read(68,2019
+void write_string(88,2512
+int i=96,2712
+void kputchar(97,2721
+void kmain(101,2787
+
+crt0.S,99
+.section 20,754
+.comm 21,769
+.align 23,808
+.global 24,817
+crt0:crt025,830
+hang:hang45,1081
+
+loader.h,3262
+#define __LOADER__3,20
+#define STAGE1_PARTEND	6,93
+#define STAGE1_SIGNATURE	9,161
+#define ARCH_IA3211,194
+#define DIRECT_BOOT_EAX_MAGIC	13,213
+#define	SYSXBOOT_EAX_MAGIC	14,254
+typedef __signed char int8_t;17,339
+typedef unsigned char uint8_t;18,369
+typedef short int16_t;19,400
+typedef unsigned short uint16_t;20,423
+typedef int int32_t;21,456
+typedef unsigned int uint32_t;22,477
+#define X86_INST_ATTR	24,509
+uint8_t inb(27,617
+void insb(34,755
+uint16_t inw(42,941
+void insw(49,1081
+uint32_t inl(57,1267
+void insl(64,1407
+void outb(72,1593
+void outsb(77,1713
+void outw(85,1896
+void outsw(90,2017
+void outsl(98,2200
+void outl(106,2383
+#define ELF_MAGIC_BE	110,2490
+#define ELF_MAGIC_LE	111,2553
+#define ELF_TYPE_EXEC	114,2637
+#define ELF_TYPE_DYNAMIC	115,2662
+#define ELF_TYPE_CORE	116,2689
+#define EI_CLASS	119,2734
+#define EI_DATA	120,2754
+#define EI_VERSION	121,2774
+#define EI_ABI	122,2796
+#define ELF_CLASS_32	125,2837
+#define ELF_CLASS_64	126,2861
+#define ELF_MACH_SPARC	129,2906
+#define ELF_MACH_386	130,2932
+#define ELF_MACH_486	131,2956
+#define ELF_MACH_AMD64	132,2980
+#define ELF_PROG_LOAD	135,3025
+#define ELF_PROG_INTERP	136,3050
+#define ELF_PF_X	139,3089
+#define ELF_PF_W	140,3112
+#define ELF_PF_R	141,3135
+#define ELF_SHT_NULL	144,3170
+#define ELF_SHT_PROGBITS	145,3194
+#define ELF_SHT_SYMTAB	146,3221
+#define ELF_SHT_STRTAB	147,3247
+#define ELF_SHN_UNDEF	150,3285
+#define ELF_STN_UNDEF	153,3333
+#define ELF_ST_BIND(156,3381
+#define ELF_ST_TYPE(157,3416
+#define ELF_ST_INFO(158,3452
+#define ELF_AT_NULL	161,3535
+#define ELF_AT_IGNORE	162,3579
+#define ELF_AT_EXECFD	163,3635
+#define ELF_AT_PHDR	164,3694
+#define ELF_AT_PHENT	165,3752
+#define ELF_AT_PHNUM	166,3812
+#define ELF_AT_PAGESZ	167,3869
+#define ELF_AT_BASE	168,3918
+#define ELF_AT_FLAGS	169,3976
+#define ELF_AT_ENTRY	170,4013
+#define ELF_AT_NOTELF	171,4067
+#define ELF_AT_UID	172,4119
+#define ELF_AT_EUID	173,4158
+#define ELF_AT_GID	174,4203
+#define ELF_AT_EGID	175,4242
+#define ELF_AT_CLKTCK	176,4287
+	uint32_t e_magic;179,4359
+	uint8_t e_ident[e_ident180,4378
+	uint16_t e_type;181,4400
+	uint16_t e_machine;182,4418
+	uint32_t e_version;183,4439
+	uint32_t e_entry;184,4460
+	uint32_t e_phoff;185,4479
+	uint32_t e_shoff;186,4498
+	uint32_t e_flags;187,4517
+	uint16_t e_ehsize;188,4536
+	uint16_t e_phentsize;189,4556
+	uint16_t e_phnum;190,4579
+	uint16_t e_shentsize;191,4598
+	uint16_t e_shnum;192,4621
+	uint16_t e_shstrndx;193,4640
+} Elf32_Ehdr;194,4662
+	uint32_t p_type;197,4694
+	uint32_t p_offset;198,4712
+	uint32_t p_vaddr;199,4732
+	uint32_t p_paddr;200,4751
+	uint32_t p_filesz;201,4770
+	uint32_t p_memsz;202,4790
+	uint32_t p_flags;203,4809
+	uint32_t p_align;204,4828
+} Elf32_Phdr;205,4847
+	uint32_t sh_name;208,4879
+	uint32_t sh_type;209,4898
+	uint32_t sh_flags;210,4917
+	uint32_t sh_addr;211,4937
+	uint32_t sh_offset;212,4956
+	uint32_t sh_size;213,4977
+	uint32_t sh_link;214,4996
+	uint32_t sh_info;215,5015
+	uint32_t sh_addralign;216,5034
+	uint32_t sh_entsize;217,5058
+} Elf32_Shdr;218,5080
+	uint32_t st_name;221,5112
+	uint32_t st_value;222,5131
+	uint32_t st_size;223,5151
+	uint8_t st_info;224,5170
+	uint8_t st_other;225,5188
+	uint16_t st_shndx;226,5207
+} Elf32_Sym;227,5227
+
+boot.S,345
+.set 34,1365
+.set 35,1414
+.set 36,1470
+.global 51,2245
+start:start52,2277
+seta20.1:seta20.173,3148
+seta20.2:seta20.278,3302
+nobiosmem:nobiosmem104,4107
+memdetected:memdetected106,4146
+real_to_prot:real_to_prot118,4785
+protcseg:protcseg130,5284
+spin:spin149,5910
+.p2align 151,5960
+gdt:gdt152,6000
+gdtdesc:gdtdesc157,6130

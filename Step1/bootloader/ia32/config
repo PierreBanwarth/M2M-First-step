@@ -1,0 +1,7 @@
+# qemu config file
+
+[drive]
+  media = "disk"
+  index = "0"
+  file = "hda.img"
+

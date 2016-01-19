@@ -1,0 +1,32 @@
+FORCE_COMMON_ALLOCATION
+
+SECTIONS {
+	idtdesc = 0x1100;
+	idt = 0x1108;
+
+
+	.real 0x4000 : {
+		 *(.text.real)
+		*(.data.real)
+		*(.bss.real)
+	}
+
+	.text 0x100000 : {
+		_btext = .;
+		*(.text)
+		_etext = .;
+	}
+ 
+	.data : {
+		_bdata = .;
+		*(.data)
+		_edata  =  .;
+	}
+
+	.bss : {
+		_bbss = .;
+		*(.bss)
+		*(COMMON)
+		_ebss = .;
+	}
+}

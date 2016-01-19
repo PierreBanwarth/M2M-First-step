@@ -1,0 +1,192 @@
+
+\documentclass[10]{article}
+\usepackage{graphicx}
+\begin{document}
+\title{Step 1 - Work Log \\
+M2M Lectures\\
+Grenoble University}
+\author{Your Names Here}
+\date{\today}
+\maketitle
+
+\section{Preface by Pr. Olivier Gruber}
+
+This document is your work log for the first step in the 
+M2M course, master-level, at the University of Grenoble, France.
+You will have such a document for each step of our course
+together.
+
+This document has two parts. One part is about diverse
+sections, each with a bunch of questions 
+that you have to answers. The other part is really 
+a laboratory log, keeping track of what you do, 
+as you do.
+
+The questions provide a guideline for your learning. 
+They are not about getting a good grade if you answer them
+correctly, they are about giving your pointers on what to 
+learn about.
+
+The goal of the questions is therefore not to be answered 
+in three lines of text and be forgotten about. The questions
+must be researched and thoroughly understood. Ask questions
+around you if things are unclear, to your fellow students
+and to me, your professor. 
+
+Writing down the answers to the questions is a tool for helping
+your learn and remember. Also, it keeps track of what you know,
+the URLs you visited, the open questions that you are trouble with,
+etc. The tools you used. It is intended to be a living document,
+written as you go.
+
+Ultimately, the goal of the document is to be kept for 
+your personal records. If ever you will work on embedded
+systems, trust me, you will be glad to have a written 
+trace about all this.
+
+{\bf REMEMBER:} plaggia is a crime that can get you evicted
+forever from french universities... The solution is simple,
+write using your own words or quote, giving the source of
+the quoted text. Also, remember that you do not learn through
+cut\&paste. You also do not learn much by watching somebody else
+doing.
+
+\section{Qemu}
+
+\begin{enumerate}
+\item 
+What is Qemu for?
+\item
+Why cannot you run a linux kernel in a regular linux process?
+\item
+Comment the different options you used to start qemu.
+\end{enumerate}
+
+\section{Boot Process}
+
+\begin{enumerate}
+\item
+How is an x86 machine booting up?
+\item
+Hints: Bios, MBR (Master Boot Record), Kernel.
+\item
+What is the role of each involved parts?
+\item
+How is built the disk image that you use to boot with qemu?
+Describe its layout in terms of sectors and the contents of 
+those sectors.
+\end{enumerate}
+
+\section{Using Eclipse to browse the sources} 
+
+Explain how you configured Eclipse to be able to browse the given sources.
+
+\section{Master Boot Record}
+
+\begin{enumerate}
+\item
+From what sources (.c and .S files) is the MBR built?
+\item
+What is the purpose of those different files?
+\item
+What is an ELF? (Hint: man elf, Google is your friend) 
+\item
+Why is the objcopy program used? (Hint: look in the Makefile)
+\item
+What kind of information is available in an ELF file?
+\item
+Give the ELF layout of the MBR files (hint: readelf and objdump) 
+\item
+Look at the code in loader.c and understand it. 
+\item
+What are the function waitdisk, readsect, and readseg doing?
+\item
+Explain the dialog with the disk controller. (Hint: in/out functions).
+\item
+What can you say about the concepts at the software-hardware frontier?
+\end{enumerate}
+
+\section{Master Boot Record Debugging}
+
+Use gdb to step through our bootloader.
+
+Hints: 
+\begin{enumerate}
+\item 
+Look at the dbg target in the Makefile.
+\item
+Look at the .gdbinit file.
+\item
+Use source layout in gdb.
+\item
+Use emacs as a front end.
+\end{enumerate}
+
+List and explain the various gdb commands you use.
+Explain how you could use emacs
+
+\section{Our mini Kernel}
+
+\begin{enumerate}
+\item
+What is the code in crt0.S doing?
+\item
+What are the function in/out for at this level?
+\item
+What are the inline attributes for?
+\item
+Explain why is your fan ramping up when you launch qemu with:
+
+  \$ make clean ; make run
+
+\item
+Explain what is the relationship between the qemu option (-serial stdio)
+and the COM1 concept in the program.
+\item
+Explain what is COM1 versus the console?
+\end{enumerate}
+
+\section{Debugging with Eclipse}
+
+How did you setup your Eclipse to debug your mini kernel?
+
+\section{Kernel Extensions}
+
+{\bf IT IS MANDATORY TO USE THE DEBUGGER TO DEBUG YOUR CODE.}
+
+\subsection{Echo on the screen}
+
+This extension is to have the input from the UART be 
+echoed on the console screen (the greenish output).
+Do not forget that you have only 25 lines and you will
+need to implement scrolling.
+
+\subsection{History and line editing}
+
+This extension is to have a history of typed lines.
+A line is added to the history when the return key is pressed.
+The arrow up and down allow you to scroll up and down in the history.
+The arrow left and write allow you to move left and right in the current line.
+The backspace and delete allow you delete characters.
+
+\subsection{Echo on COM2}
+
+This extension is to have the ability to have a printf-like 
+capability on COM2. The code is in the kprintf.c file.
+
+\noindent Hints: 
+\begin{enumerate}
+\item 
+Look at the target run2 in the Makefile to know how
+to setup COM2.
+\item
+Add the kprintf.c file to your kernel
+\item
+Launch with ``make run2'' and use a telnet connection
+for COM2.
+\end{enumerate}
+
+
+\section{Laboratory Log}
+
+\end{document}
