@@ -1,0 +1,204 @@
+
+GDB is a powerful debugger for the C/C++ languages.
+There are plenty of tutorials on the Web, so this will
+be about the commands I personally use all the times.
+Many other ways of using gdb exists.
+
+Tip: remember that for easy debugging, your program must
+     have been compiled with debug symbols (at least -g with GNU gcc).
+     also, remember that optimized code might be difficult to debug
+     as the compiler moved your code around when optimizing.
+
+Tip: to know more about any command, simply ask for it:
+
+  (gdb) help layout
+  Change the layout of windows.
+  Usage: layout prev | next | <layout_name> 
+  Layout names are:
+   src   : Displays source and command windows.
+   asm   : Displays disassembly and command windows.
+   split : Displays source, disassembly and command windows.
+   regs  : Displays register window. If existing layout
+           is source/command or assembly/command, the 
+           register window is displayed. If the
+           source/assembly/command (split) is displayed, 
+           the register window is displayed with 
+           the window that has current logical focus.
+
+=======================================================================
+Launching and stopping
+=======================================================================
+
+To launch GDB, there are several ways.
+The most obvious way is to have gdb start your program.
+
+   $> gdb your-program
+   (gdb) run <with you arguments here>
+
+Ctrl-C stops the execution.
+To know where you are:
+
+   (gdb) where
+   #0  diskboot (_eax=1785688930, _ebx=129984) at loader.c:122
+   #1  0x00007c7d in protcseg () at boot.S:151
+
+gives you the current call stack, on the current thread.
+To know which thread you are on:
+
+   (gdb) thread
+   [Current thread is 1 (Thread 1)]
+   (gdb) info threads
+     Id   Target Id         Frame 
+   * 1    Thread 1 (CPU#0 [running]) diskboot (_eax=1785688930, _ebx=129984) at loader.c:122
+
+You can kill your program at any time and then restart it.
+You can even "make" it without leaving gdb.
+
+    (gdb) kill
+    Kill the program being debugged? (y or n) y
+    (gdb) make
+    (gdb) run
+
+Tip: if you kill your program, edit it, re-make it outside of gdb,
+     gdb is smart enough to know and reload your program before running it.
+
+But even better, you can set breakpoints:
+
+   (gdb) br *0x7c00
+   (gdb) br boot.S:136
+   (gdb) br diskboot
+   (gdb) br loader.c:122
+
+To know what breakpoints you already have:
+   (gdb) info br
+   Num     Type           Disp Enb Address    What
+   1       breakpoint     keep y   0x00007c00 boot.S:53
+     	   breakpoint already hit 1 time
+   2       breakpoint     keep y   0x00007c56 boot.S:136
+	   breakpoint already hit 1 time
+   3       breakpoint     keep y   0x00007db5 in diskboot at loader.c:122
+   	   breakpoint already hit 1 time
+
+You can also use watches... which is just incredibly powerful.
+
+   (gdb) help watch
+   Set a watchpoint for an expression.
+   Usage: watch [-l|-location] EXPRESSION
+   A watchpoint stops execution of your program whenever the value of
+   an expression changes.
+   If -l or -location is given, this evaluates EXPRESSION and watches
+   the memory to which it refers.
+   (gdb) 
+
+For example, you can use it to stop whenever a memory location is changed.
+Assuming you have a variable i, let's say a global variable.
+    
+   (gdb) p /x &i
+   $1 = 0x1001a0
+   (gdb) watch -l *0x1001a0
+   Hardware watchpoint 6: -location *0x1001a0
+   (gdb)
+
+=======================================================================
+Execution
+=======================================================================
+
+Now commands related to executing your program, when you are stopped
+at a breakpoint or following a Crtl-C.
+
+   (gdb) cont 
+   (gdb) step
+   (gdb) next
+   (gdb) finish
+
+Tip: you can use them as single character commands: c,s,n,f
+Tip: note that once you have typed a command, hitting return will repeat it.
+
+As you can see, gdb works line by line, using regular commands.
+Sometimes, it is hard to see where you are at in your code.
+To see more of the sources, you can use several approaches.
+
+First, you can use the list command:
+
+    (gdb) list
+or 
+    (gdb) l 120,133   
+
+If you want to avoid all this listing commands, you can ask gdb to change
+its layout of the window, showing you different panes.
+You can cycle through the different layout with the layout command:
+
+    (gdb) layout next
+
+The source layout is probably the most natural starting point.
+
+    (gdb) layout src
+
+Tip: resize your terminal window before starting gdb and 
+     certainly before issuing the layout src.
+
+=======================================================================
+Printing / Displaying
+=======================================================================
+
+To print a variable:
+
+   (gdb) print your_variable
+   (gdb) p /x your_variable
+
+You can display also, in which case, gdb will print the variable 
+whenever it stops.
+
+   (gdb) display /x your_variable
+
+
+=======================================================================
+Attaching to a running process
+=======================================================================
+
+You can also attach to a currently running program.
+See the attach command.
+
+=======================================================================
+Remote debugging
+=======================================================================
+
+This is especially useful in the embedded world, either when debugging
+with JTAG hardware debuggers or with Qemu.
+
+Qemu embeds a GDB stub so that gdb can attach to qemu... right up to
+the very instruction executed by your program. Just fantastic.
+
+    $> qemu-system-i386  <you options> -s -S
+
+In another terminal window:
+
+    $> gdb boot.elf
+    (gdb) br *0x7c00
+    (gdb) target remote:1234
+    0x0000fff0 in ?? ()
+    (gdb) cont
+    Continuing.
+    Breakpoint 1, start () at boot.S:53
+    53			cli				# Disable interrupts
+    (gdb) 
+
+=======================================================================
+Loading symbols
+=======================================================================
+
+To work, gdb needs to know the symbols of your program. 
+Gdb reads the symbols from your program file, not from the executing process.
+
+    $> gdb toto
+    Reading symbols from toto...done.
+
+Sometimes, it is necessary to load symbols. 
+It is the case in our step1, to switch from the boot.elf symbols
+to the kernel.elf symbols when the loader is done loading the kernel.elf
+and jumping to the entry point in the kernel.
+
+    (gdb) symbol kernel.elf
+    Load new symbol table from "kernel.elf"? (y or n) y
+    Reading symbols from kernel.elf...done.
+    (gdb) 

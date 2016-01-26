@@ -1,0 +1,105 @@
+<html lang="en"><head><title>Making a GRUB bootable CD-ROM - GNU GRUB Manual 0.97</title>
+
+
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="GNU GRUB Manual 0.97">
+<meta name="generator" content="makeinfo 4.8">
+<link title="Top" rel="start" href="http://www.gnu.org/software/grub/manual/html_node/index.html#Top">
+<link rel="up" href="http://www.gnu.org/software/grub/manual/html_node/Installation.html#Installation" title="Installation">
+<link rel="prev" href="http://www.gnu.org/software/grub/manual/html_node/Installing-GRUB-using-grub_002dinstall.html#Installing-GRUB-using-grub_002dinstall" title="Installing GRUB using grub-install">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage"><!--
+This manual is for GNU GRUB (version 0.97,
+8 May 2005).
+
+Copyright (C) 1999,2000,2001,2002,2004,2006 Free Software Foundation, Inc.
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.2 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with the Front-Cover Texts
+     being ``A GNU Manual,'' and with the Back-Cover Texts as in (a)
+     below.  A copy of the license is included in the section entitled
+     ``GNU Free Documentation License.''
+
+     (a) The FSF's Back-Cover Text is: ``You have freedom to copy and
+     modify this GNU Manual, like GNU software.  Copies published by
+     the Free Software Foundation raise funds for GNU development.''
+   -->
+
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style></head><body>
+<div class="node">
+<p>
+<a name="Making-a-GRUB-bootable-CD-ROM"></a>
+<a name="Making-a-GRUB-bootable-CD_002dROM"></a>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="http://www.gnu.org/software/grub/manual/html_node/Installing-GRUB-using-grub_002dinstall.html#Installing-GRUB-using-grub_002dinstall">Installing GRUB using grub-install</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="http://www.gnu.org/software/grub/manual/html_node/Installation.html#Installation">Installation</a>
+</p><hr>
+</div>
+
+<h3 class="section">3.4 Making a GRUB bootable CD-ROM</h3>
+
+<p>GRUB supports the <dfn>no emulation mode</dfn> in the El Torito
+specification<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>. This means that you can use the whole CD-ROM
+from GRUB and you don't have to make a floppy or hard disk image file,
+which can cause compatibility problems.
+
+   </p><p>For booting from a CD-ROM, GRUB uses a special Stage 2 called
+<samp><span class="file">stage2_eltorito</span></samp>. The only GRUB files you need to have in your
+bootable CD-ROM are this <samp><span class="file">stage2_eltorito</span></samp> and optionally a config file
+<samp><span class="file">menu.lst</span></samp>. You don't need to use <samp><span class="file">stage1</span></samp> or <samp><span class="file">stage2</span></samp>,
+because El Torito is quite different from the standard boot process.
+
+   </p><p>Here is an example of procedures to make a bootable CD-ROM
+image. First, make a top directory for the bootable image, say,
+`<samp><span class="samp">iso</span></samp>':
+
+</p><pre class="example">     $ <kbd>mkdir iso</kbd>
+</pre>
+   <p>Make a directory for GRUB:
+
+</p><pre class="example">     $ <kbd>mkdir -p iso/boot/grub</kbd>
+</pre>
+   <p>Copy the file <samp><span class="file">stage2_eltorito</span></samp>:
+
+</p><pre class="example">     $ <kbd>cp /usr/lib/grub/i386-pc/stage2_eltorito iso/boot/grub</kbd>
+</pre>
+   <p>If desired, make the config file <samp><span class="file">menu.lst</span></samp> under <samp><span class="file">iso/boot/grub</span></samp>
+(see <a href="http://www.gnu.org/software/grub/manual/html_node/Configuration.html#Configuration">Configuration</a>), and copy any files and directories for the disc to the
+directory <samp><span class="file">iso/</span></samp>.
+
+   </p><p>Finally, make a ISO9660 image file like this:
+
+</p><pre class="example">     $ <kbd>mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot \
+         -boot-load-size 4 -boot-info-table -o grub.iso iso</kbd>
+</pre>
+   <p>This produces a file named <samp><span class="file">grub.iso</span></samp>, which then can be burned
+into a CD (or a DVD).  <kbd>mkisofs</kbd> has already set up the disc to boot
+from the <kbd>boot/grub/stage2_eltorito</kbd> file, so there is no need to
+setup GRUB on the disc.  (Note that the <kbd>-boot-load-size 4</kbd> bit is
+required for compatibility with the BIOS on many older machines.)
+
+   </p><p>You can use the device `<samp><span class="samp">(cd)</span></samp>' to access a CD-ROM in your
+config file. This is not required; GRUB automatically sets the root device
+to `<samp><span class="samp">(cd)</span></samp>' when booted from a CD-ROM. It is only necessary to refer to
+`<samp><span class="samp">(cd)</span></samp>' if you want to access other drives as well.
+
+   </p><div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> El Torito is a specification for bootable CD
+using BIOS functions.</p>
+
+   <p></p><hr></div>
+
+   
+</body></html>

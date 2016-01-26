@@ -1,0 +1,9 @@
+timeout 5
+gfxmenu (hd0,0)/boot/message
+
+title Kernel 2.6.23.9-mini 
+    root (hd0,0)
+    kernel (hd0,0)/boot/vmlinuz noresume showopts root=/dev/hda1
+
+# root=/dev/hda1
+# root=/dev/hdc vga=0x317 noresume splash=silent showopts

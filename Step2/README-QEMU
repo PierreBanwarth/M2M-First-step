@@ -1,0 +1,464 @@
+
+Create a QEMU disk, which is equivalent to create a real disk.
+Of course, start with reading the help.
+
+  $ qemu-img --help
+    ... valuable read...
+  $ qemu-img create -f raw hda.img 128M
+
+Option: -f raw 
+        raw is the default disk image format for QEMU.
+        it is a byte-for-byte image of a real disk.
+
+Mounting an raw image on the host:
+----------------------------------
+
+Sometimes it is helpful to be able to mount a drive image under the host system. 
+For example, if the guest does not have network support, 
+the only way to transfer files into and out of the guest will be by  
+the storage devices it can address.
+
+
+Linux and other Unix-like hosts can mount images created with the raw format type 
+using a loopback device. But you need to know the start offset of the partition you
+wish to mount:
+
+  $ fdisk hda.img
+  Command (m for help): p
+
+  Disk hda.img: 134 MB, 134217728 bytes
+  144 heads, 17 sectors/track, 107 cylinders, total 262144 sectors
+  Units = sectors of 1 * 512 = 512 bytes
+  Sector size (logical/physical): 512 bytes / 512 bytes
+  I/O size (minimum/optimal): 512 bytes / 512 bytes
+  Disk identifier: 0x000a29f6
+
+    Device Boot      Start         End      Blocks   Id  System
+  hda.img1   *           1      250000      125000   83  Linux
+
+  Command (m for help): q
+  $
+ 
+From a root login (or using sudo), mount a loopback with an offset of 32,256.
+Note: if you have an image without partitions you should omit the ",offset=..." part. 
+Note: notice the start is at the first sector, so the offset=1*512
+
+  $ sudo mkdir -p /mnt/hda
+  $ sudo mount -o loop,offset=$((1*512)) hda.img /mnt/hda
+  $ cp you-file /mnt/hda
+  $ umount /mnt/hda
+
+
+Choosing qemu or kvm:
+---------------------
+
+You can pick a 32bit or 64bit qemu or you can pick kvm if you have it installed
+on your system:
+
+   qemu-system-x86_64  (64bit qemu)
+   qemu-system-i386    (32bit qemu)
+   kvm                 (hardware-accelerated qemu, compatible with your host hardware)
+
+Main QEMU Options:
+------------------
+
+The idea about most of the options of Qemu is to choose your hardware...
+Indeed, Qemu is about simulating a computer, so the configuration of Qemu is 
+mostly about what hardware is simulated:
+       - processor type and number of cores
+       - amount of memory
+       - disks, either ide or scsi disks for example
+       - cdrom
+       - serial lines
+       - display, if any
+       - buses, like ISA or PCI bus
+       - etc.
+
+By choosing qemu-system-i386, you are opting for a i386-based computer.
+You could choose qemu-system-arm if you prefer a ARM-based computer,
+more widely used in the embedded world.
+
+How do you know about the options? 
+***READ*** the manual, or issue:
+ 
+     $ qemu-system-i386 --help
+
+
+----------------------------------------------------
+    WARNING --- WARNING --- WARNING --- WARNING 
+----------------------------------------------------
+It is essential that you understand the relationship between your Qemu
+configuration and your linux kernel... Indeed, if your kernel does 
+have the support for the chosen hardware, your kernel may panic
+or it may run but not show you some of the hardware devices
+you selected for Qemu to emulate.
+
+For instance, let's consider a disk. A hard disk is typically
+a block-oriented device. The disk device is connected on a bus,
+for instance an ISA (legacy) bus or a more modern PCI bus. 
+If it is the case, the kernel must have support for the PCI bus, 
+otherwise, any device on that bus would be invisible to the kernel. 
+
+If the kernel "sees" the PCI bus, it must have the support for 
+the type of disk we chose. A disk could have different types
+of controllers, often called interface. Old disks would be IDE
+disks, more modern disk would be SCSI. SATA disks are a kind
+of SCSI disks. This means your kernel would need support for
+the right kind of controller, either IDE or SCSI. 
+
+Sometimes, Qemu can be a little tricky to setup, from a configuration
+standpoint. Some configurations are forbidden and Qemu refuses
+to start. Those are the easy cases. In some cases, you ask for 
+something, and Qemu chooses something else, silently.
+And this is really annoying in our case, because, since we
+are building a specialized kernel, not a generic one, 
+we must know exactly what hardware is simulated by Qemu.
+
+For instance, the Qemu documentation clearly states that
+the following command will give a IDE hard disk, using
+the file hda.img as the storage.
+
+    $ qemu-system-i386 -hda hda.img
+
+And it does as said, as long as we do not add a cdrom.
+
+    $ qemu-system-i386 -hda hda.img -cdrom livecd.iso
+
+If we do, then everything turns out to be SCSI now, 
+even though the documentation says that both these 
+line should result in both the disk and the cdrom
+to be IDE devices... Hum... I guess we cannot ask 
+to much when we are asking for legacy devices...
+
+So? How can we do it? If you have a generic kernel and
+a generic initrd, chances are that they support about 
+anything, hardware wise. Hence, if you boot those on your
+Qemu, and you redirect the kernel stdio to your terminal,
+then you will see the kernel log and with all the necessary
+information. The best is that you need nothing more than
+the kernel and the initrd:
+
+    $ qemu-system-i386 -kernel your-kernel -initrd your-initrd -serial stdio
+
+[    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 2.6.31-22-generic (buildd@vernadsky) (gcc version 4.4.1 (Ubuntu 4.4.1-4ubuntu8) ) #60-Ubuntu SMP Thu May 27 00:22:23 UTC 2010 (Ubuntu 2.6.31-22.60-generic)
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 0000000007ffe000 (usable)
+[    0.000000]  BIOS-e820: 0000000007ffe000 - 0000000008000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
+[    0.000000] DMI 2.4 present.
+[    0.000000] last_pfn = 0x7ffe max_arch_pfn = 0x100000
+[    0.000000] Scanning 1 areas for low memory corruption
+[    0.000000] modified physical RAM map:
+[    0.000000]  modified: 0000000000000000 - 0000000000002000 (usable)
+[    0.000000]  modified: 0000000000002000 - 0000000000006000 (reserved)
+[    0.000000]  modified: 0000000000006000 - 000000000009fc00 (usable)
+[    0.000000]  modified: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  modified: 00000000000f0000 - 0000000000100000 (reserved)
+[    0.000000]  modified: 0000000000100000 - 0000000007ffe000 (usable)
+[    0.000000]  modified: 0000000007ffe000 - 0000000008000000 (reserved)
+[    0.000000]  modified: 00000000fffc0000 - 0000000100000000 (reserved)
+[    0.000000] init_memory_mapping: 0000000000000000-0000000007ffe000
+[    0.000000] Using x86 segment limits to approximate NX protection
+[    0.000000] RAMDISK: 07556000 - 07fed745
+[    0.000000] ACPI: RSDP 000f09e0 00014 (v00 BOCHS )
+[    0.000000] ACPI: RSDT 07fffbc1 00034 (v01 BOCHS  BXPCRSDT 00000001 BXPC 00000001)
+[    0.000000] ACPI: FACP 07fff1c0 00074 (v01 BOCHS  BXPCFACP 00000001 BXPC 00000001)
+[    0.000000] ACPI: DSDT 07ffe040 01180 (v01 BOCHS  BXPCDSDT 00000001 BXPC 00000001)
+[    0.000000] ACPI: FACS 07ffe000 00040
+[    0.000000] ACPI: SSDT 07fff234 008DD (v01 BOCHS  BXPCSSDT 00000001 BXPC 00000001)
+[    0.000000] ACPI: APIC 07fffb11 00078 (v01 BOCHS  BXPCAPIC 00000001 BXPC 00000001)
+[    0.000000] ACPI: HPET 07fffb89 00038 (v01 BOCHS  BXPCHPET 00000001 BXPC 00000001)
+[    0.000000] 0MB HIGHMEM available.
+[    0.000000] 127MB LOWMEM available.
+
+
+Notice that the log is very detailed. At the end, you can see that Qemu starts 
+by default with 128MB of RAM. Then a while later in the log, you can see that
+you have a single CPU, with 32K of instruction cache, 32K of data cache,
+and 4MB of L2 cache.
+
+[    0.027670] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    0.028192] CPU: L2 cache: 4096K
+
+Then, a while later... we see we have a PCI and a chipset PIIX4 
+
+[    0.404566] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    0.412289] pci 0000:00:01.3: quirk: region b000-b03f claimed by PIIX4 ACPI
+[    0.413069] pci 0000:00:01.3: quirk: region b100-b10f claimed by PIIX4 SMB
+
+Then, even later, we see what kind of disk we have. It starts with the fact 
+that we are clearly talking about SCSI... and not IDE.
+
+[    2.606005] scsi0 : ata_piix
+[    2.608510] scsi1 : ata_piix
+[    2.609583] ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xc040 irq 14
+[    2.610335] ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xc048 irq 15
+
+Later confirmed with the following output:
+
+[    2.780702] ata1.00: ATA-7: QEMU HARDDISK, 2.0.0, max UDMA/100
+[    2.782424] ata1.00: 262144 sectors, multi 16: LBA48 
+[    2.786564] ata2.00: ATAPI: QEMU DVD-ROM, 2.0.0, max UDMA/100
+[    2.788700] ata2.00: configured for MWDMA2
+[    2.792142] ata1.00: configured for MWDMA2
+[    2.813451] scsi 0:0:0:0: Direct-Access     ATA      QEMU HARDDISK    2.0. PQ: 0 ANSI: 5
+[    2.817858] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[    2.822220] sd 0:0:0:0: [sda] 262144 512-byte logical blocks: (134 MB/128 MiB)
+[    2.825936] scsi 1:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     2.0. PQ: 0 ANSI: 5
+[    2.831286] sr0: scsi3-mmc drive: 4x/4x cd/rw xa/form2 tray
+[    2.832333] Uniform CD-ROM driver Revision: 3.20
+[    2.839988] sd 0:0:0:0: [sda] Write Protect is off
+[    2.841430] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    2.845102]  sda:
+[    2.856527] sr 1:0:0:0: Attached scsi generic sg1 type 5
+[    2.858512]  sda1 sda2
+[    2.869546] sd 0:0:0:0: [sda] Attached SCSI disk
+
+That clearly states that we have ata disk (ATA-7).
+That it is seen as a scsi disk, and named by the kernel
+as "sda", which suggests that we will have a /dev/sda
+special file with the right major and minor (8,0).
+For SCSI disk (named sda, sdb, etc.), the major is 8. 
+For IDE disk (named hda, hdb, etc.), the major is 3.
+
+----------------------------------------------------
+Specifying the amount of memory on the virtual board
+----------------------------------------------------
+Default is 128M.
+ 
+   $ qemu-system-i386 -m 64M
+
+----------------------------------------------------
+Disks
+----------------------------------------------------
+
+To boot qemu from a CD-ROM, with a hard disk (hda) and forcing the boot order to 
+be the cdrom first (order=d) and then the disk (order=bc) with d for cdrom and 
+c for hard disk. If you add the menu=on option, you will be able to choose 
+from which device to boot from.
+
+  DISKS="-cdrom livecd.iso -hda hda.img -boot order=dc,menu=on"
+
+To boot from a hard disk, without a cdrom.
+Booting from the hard disk is the default behavior.
+This tells qemu that the "hard disk" contents will be in file hda.img on the host file system.
+This disk should appear as device /dev/hda in the guest GNU/Linux OS
+
+  DISKS="-hda hda.img"
+
+For your information, instead of -cdrom you can use:
+
+   $ qemu -drive file=hda.img,index=2,media=cdrom
+
+Or even a more precise version, specifying the disk as an ide:
+
+   $ qemu -drive file=hda.img,if=ide,index=0,media=disk
+   $ qemu -drive file=hda.img,if=ide,index=1,media=disk
+
+Or even a more precise version, with specifying some details
+on the device itself:
+
+   $ qemu -device ide-hd,drive=c0 -drive file=hda.img,id=c0,if=none
+
+The above lines tell you that your disk is by default an IDE disk.
+You can connect a SCSI disk with unit ID 6 on the bus #0:
+
+   $ qemu -drive file=file,if=scsi,bus=0,unit=6
+
+To more information about device types and all, ask qemu itself:
+
+     $ qemu-system-i386 --help
+     ...
+     $ qemu-system-i386 -device help
+     ...
+     $ qemu-system-i386 -device ide-hd,help
+     ...
+     
+----------------------------------------------------
+Display
+----------------------------------------------------
+
+To not have any display, 
+
+   $ qemu-system-i386 -nographic
+
+To have a vga screen:
+
+   $ qemu-system-i386 -vga std
+
+You also can choose a keyboard layout.
+Default is -k en-us, but for french keyboard, you may use -k fr
+
+   $ qemu-system-i386 -k en-us
+   $ qemu-system-i386 -k fr
+
+Of course, you can equally choose your mouse and other small devices.
+
+----------------------------------------------------
+Linux Kernel, Initrd, and options
+----------------------------------------------------
+
+  OPTIONS="root=/dev/hda1 console=ttyS0,115200n8"
+  KERNEL="LiveCD/boot/vmlinuz-2.6.31-22-generic"
+  INITRD="LiveCD/boot/initrd.img-2.6.31-22-generic"
+
+  $qemy-system-i386  -kernel $KERNEL -append "$OPTIONS" -initrd $INITRD -serial stdio
+
+USEFULL TRICK:
+--------------
+
+To start QEMU redirecting the xterm as the standard input/output.
+You need to associate this with telling your Kernel to use a serial line
+as its console. In GRUB menu, add the following option to your kernel line:
+
+     kernel (cd)/boot/vmlinuz  console=ttyS0,115200n8
+
+The console option tells the kernel that its console should be the serial line ttyS0.
+During the kernel boot sequence, all outputs will go through the serial line, 
+which means on your terminal on your host. This is great to have the full history
+and be able to scroll up and down to see what happens.
+
+When dropping to a shell, the init process will use also the console, which is
+still set to the serial line. So you will see no echo in the QEMU window (emulating
+the target screen), but all outputs will still echo on your terminal on the host.
+
+In this mode, qemu is understanding ^C is a request to quit... stopping the emulation.
+If one wants to pass ^C to the guest environment, you can use the option
+
+   -serial mon:stdio
+
+In which case, the ^C is passed to the guest, but qemu can no longer be killed directly.
+Furthermore, pkill or kill -9 no longer works. However, you can hit "^a c" 
+and the qemu monitor, and type "quit" to exit qemu.
+
+It is possible to set another console parameter, telling the kernel to switch
+to the second console once booted. That is, its logging during its boot sequence
+goes through the first console, but once booted, the kernel sets up the console
+to the second one. 
+
+Hence, a kernel line like the following one is equivalent to the one above:
+
+     kernel (cd)/boot/vmlinuz  console=ttyS0,115200n8 console=ttyS0
+
+However, a kernel line like the following one is getting the boot sequence
+in your terminal and the console in the QEMU window:
+
+     kernel (cd)/boot/vmlinuz  console=ttyS0,115200n8 console=tty0
+
+With this configuration, you get the boot log on the qemu terminal, in your host,
+and then the simulation continues on the vga console. The interesting thing here
+is that you can combine the above with "-serial mon:stdio" option discussed above.
+In this case, as soon as the boot is over, you can type "^a c" in the host terminal
+and get the qemu monitor in that terminal, continuing to interact with your guest
+in the vga console. Top cool.
+
+Remember that you can edit your GRUB menu interactively at boot time,
+typing 'e' when seeing the GRUB menu listing. If you have a multi-entry
+GRUB menu, select the right entry first with the arrow keys.
+
+
+Debugging with QEMU:
+--------------------
+
+To have GDB debugging
+
+    GDB="-S -s"
+
+    $ qemu-system-i386 -S -s
+
+or even better:
+ 
+    $ qemu-system-i386 -gdb tcp::1234 -S
+
+The -S option forces qemu to stop upon starting 
+allowing you to attach gdb. The tcp::1234 indicates
+that you will attach on the port 1234.
+
+  $ gdb
+  (gdb) target remote localhost:1234
+  Remote debugging using localhost:1234
+  0x0000fff0 in ?? ()
+  (gdb) file your-elf-file-with-debug-info
+  ...
+  (gdb) br your-breakpoint
+  ...
+  (gdb) cont
+  Continuing.
+
+
+Configuring the network:
+------------------------
+
+See http://en.wikibooks.org/wiki/QEMU/Networking
+The following three ways to start qemu are equivalent:
+
+ $ qemu -m 256 -hda disk.img &
+ $ qemu -m 256 -hda disk.img -net nic -net user &
+ $ qemu-system-i386 -m 256 -hda disk.img -netdev user,id=network0 -device e1000,netdev=network0 &
+
+By default, the device is e1000. 
+Also, there is only tcp/udp support, no ping, no arp.
+
+   DHCP 10.0.2.2
+   DNS  10.0.2.3
+   IP   10.0.2.15
+
+I am guessing the gateway will be 10.0.2.1
+You will need to make sure the module for the ethernet card is loaded:
+
+  $ modprobe e1000
+ 
+The module should be under /lib/modules/2.6.31-22-generic/kernel/drivers/net/e1000/
+Then you need to setup your network using ifconfig. 
+
+WARNING: in this case, you only have a TCP/UDP tunnel set up... so you can reach 
+the Internet, but you cannot ping. Also, the incoming traffic is filtered out
+by Qemu, acting as a firewall.
+
+For a nicer setting, we will use a TAP and not a TUN. You will still have 
+to setup your network through ifconfig, but the setting has changed.
+In your guest, you will use:
+
+   ip addr: 192.168.100.2
+   gateway: 192.168.100.1
+   dns: 8.8.8.8
+
+If you create launch qemu this way:
+
+    $ qemu-system-i386 -net nic -net tap,ifname=tap0,script=no 
+
+And you created before launching qemu the following TAP:
+
+    $ tunctl -u felipec -t tap0
+    $ ifconfig tap0 192.168.100.1 up
+
+And configured NAT as root on the host:
+
+    $ echo 1 > /proc/sys/net/ipv4/ip_forward
+    $ iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    $ iptables -I FORWARD 1 -i tap0 -j ACCEPT
+    $ iptables -I FORWARD 1 -o tap0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+You should be able to ping both ways:
+
+    host$ ping 192.168.100.2
+    	  ...
+    guest$ ping 192.168.100.1
+    	   ...
+And of course ping other sites on the Internet.
+
+

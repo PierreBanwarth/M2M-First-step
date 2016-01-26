@@ -1,0 +1,112 @@
+<html lang="en"><head><title>Installing GRUB natively - GNU GRUB Manual 0.97</title>
+
+
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="GNU GRUB Manual 0.97">
+<meta name="generator" content="makeinfo 4.8">
+<link title="Top" rel="start" href="http://www.gnu.org/software/grub/manual/html_node/index.html#Top">
+<link rel="up" href="http://www.gnu.org/software/grub/manual/html_node/Installation.html#Installation" title="Installation">
+<link rel="prev" href="http://www.gnu.org/software/grub/manual/html_node/Creating-a-GRUB-boot-floppy.html#Creating-a-GRUB-boot-floppy" title="Creating a GRUB boot floppy">
+<link rel="next" href="http://www.gnu.org/software/grub/manual/html_node/Installing-GRUB-using-grub_002dinstall.html#Installing-GRUB-using-grub_002dinstall" title="Installing GRUB using grub-install">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage"><!--
+This manual is for GNU GRUB (version 0.97,
+8 May 2005).
+
+Copyright (C) 1999,2000,2001,2002,2004,2006 Free Software Foundation, Inc.
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.2 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with the Front-Cover Texts
+     being ``A GNU Manual,'' and with the Back-Cover Texts as in (a)
+     below.  A copy of the license is included in the section entitled
+     ``GNU Free Documentation License.''
+
+     (a) The FSF's Back-Cover Text is: ``You have freedom to copy and
+     modify this GNU Manual, like GNU software.  Copies published by
+     the Free Software Foundation raise funds for GNU development.''
+   -->
+
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style></head><body>
+<div class="node">
+<p>
+<a name="Installing-GRUB-natively"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="http://www.gnu.org/software/grub/manual/html_node/Installing-GRUB-using-grub_002dinstall.html#Installing-GRUB-using-grub_002dinstall">Installing GRUB using grub-install</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="http://www.gnu.org/software/grub/manual/html_node/Creating-a-GRUB-boot-floppy.html#Creating-a-GRUB-boot-floppy">Creating a GRUB boot floppy</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="http://www.gnu.org/software/grub/manual/html_node/Installation.html#Installation">Installation</a>
+</p><hr>
+</div>
+
+<h3 class="section">3.2 Installing GRUB natively</h3>
+
+<p><strong>Caution:</strong> Installing GRUB's stage1 in this manner will erase the
+normal boot-sector used by an OS.
+
+   </p><p>GRUB can currently boot GNU Mach, Linux, FreeBSD, NetBSD, and OpenBSD
+directly, so using it on a boot sector (the first sector of a
+partition) should be okay. But generally, it would be a good idea to
+back up the first sector of the partition on which you are installing
+GRUB's stage1. This isn't as important if you are installing GRUB on
+the first sector of a hard disk, since it's easy to reinitialize it
+(e.g. by running `<samp><span class="samp">FDISK /MBR</span></samp>' from DOS).
+
+   </p><p>If you decide to install GRUB in the native environment, which is
+definitely desirable, you'll need to create a GRUB boot disk, and
+reboot your computer with it. Otherwise, see <a href="http://www.gnu.org/software/grub/manual/html_node/Installing-GRUB-using-grub_002dinstall.html#Installing-GRUB-using-grub_002dinstall">Installing GRUB using grub-install</a>.
+
+   </p><p>Once started, GRUB will show the command-line interface
+(see <a href="http://www.gnu.org/software/grub/manual/html_node/Command_002dline-interface.html#Command_002dline-interface">Command-line interface</a>). First, set the GRUB's <dfn>root
+device</dfn><a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a> to the
+partition containing the boot directory, like this:
+
+</p><pre class="example">     grub&gt; <kbd>root (hd0,0)</kbd>
+</pre>
+   <p>If you are not sure which partition actually holds this directory, use the
+command <samp><span class="command">find</span></samp> (see <a href="http://www.gnu.org/software/grub/manual/html_node/find.html#find">find</a>), like this:
+
+</p><pre class="example">     grub&gt; <kbd>find /boot/grub/stage1</kbd>
+</pre>
+   <p>This will search for the file name <samp><span class="file">/boot/grub/stage1</span></samp> and show the
+devices which contain the file.
+
+   </p><p>Once you've set the root device correctly, run the command
+<samp><span class="command">setup</span></samp> (see <a href="http://www.gnu.org/software/grub/manual/html_node/setup.html#setup">setup</a>):
+
+</p><pre class="example">     grub&gt; <kbd>setup (hd0)</kbd>
+</pre>
+   <p>This command will install the GRUB boot loader on the Master Boot
+Record (MBR) of the first drive. If you want to put GRUB into the boot
+sector of a partition instead of putting it in the MBR, specify the
+partition into which you want to install GRUB:
+
+</p><pre class="example">     grub&gt; <kbd>setup (hd0,0)</kbd>
+</pre>
+   <p>If you install GRUB into a partition or a drive other than the first
+one, you must chain-load GRUB from another boot loader. Refer to the
+manual for the boot loader to know how to chain-load GRUB.
+
+   </p><p>After using the setup command, you will boot into GRUB without the
+GRUB floppy. See the chapter <a href="http://www.gnu.org/software/grub/manual/html_node/Booting.html#Booting">Booting</a> to find out how to boot
+your operating systems from GRUB.
+
+   </p><div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> Note that GRUB's root device doesn't necessarily mean
+your OS's root partition; if you need to specify a root partition for
+your OS, add the argument into the command <samp><span class="command">kernel</span></samp>.</p>
+
+   <p></p><hr></div>
+
+   
+</body></html>

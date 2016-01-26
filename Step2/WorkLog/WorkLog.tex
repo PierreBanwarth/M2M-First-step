@@ -1,0 +1,222 @@
+
+\documentclass[10]{article}
+\usepackage{graphicx}
+\begin{document}
+\title{Step 1 - Work Log \\
+M2M Lectures\\
+Grenoble University}
+\author{Your Names Here}
+\date{\today}
+\maketitle
+
+\section{Preface by Pr. Olivier Gruber}
+
+This document is your work log for the second step in the 
+M2M course, leading to build your own mini-distribution.
+
+Like for the first step, this work log has two parts. 
+One part is about diverse sections, that you must fill up.
+Each section has a bunch of questions to help you do that.
+The questions provide a guideline for your learning. 
+They are about giving your pointers on what to learn about.
+The other part is really a laboratory log, 
+keeping track of what you do, as you do.
+
+{\bf REMEMBER:} plaggia is a crime that can get you evicted
+forever from french universities... The solution is simple,
+write using your own words or quote, giving the source of
+the quoted text. Also, remember that you do not learn through
+cut\&paste. You also do not learn much by watching somebody else
+doing.
+
+\section{Outline of Step2}
+
+To build your own distribution, almost from scratch, you will need
+to acquire a number of skills:
+
+\begin{itemize}
+\item
+GRUB bootloader
+\item
+Linux kernel
+\item
+Core files and layout of a distribution.
+\end{itemize}
+
+Many pieces are provided to you, pieces that you are asked to understand.
+First, you are given a compiled, ready-to-use, boot loader (GRUB 0.97).
+Second, you are given a minimal distribution, with a linux kernel.
+
+You can build a Qemu disk with mkdist.sh sript, following the on-screen
+instructions, you can get to have a disk and boot Qemu with it.
+
+Select either of the hello options in the GRUB menu at boot time,
+and you will get something very similar to what you did in step1,
+but using a real bootloader and a linux kernel.
+
+After that, the learning process will start and it cannot be entirely 
+a linear process, sorry. So you will fill up the various sections
+incrementally, certainly in an order that will be a bit erratic.
+
+We suggest the following steps.
+
+\begin{itemize}
+\item Read and start understanding the script: mkdist.sh 
+\item Read about and understand the GRUB process
+\item Read about and understand the Linux kernel boot process,
+with and without an initial ramdisk (initrd).
+\item Understand the specifics of the hello program.
+\end{itemize}
+
+Here are a bunch of questions and points to help you progress
+and focus your attention.
+
+\begin{enumerate}
+\item
+Layout of the Qemu disk, in terms of GRUB stages and file system partition.
+\item
+Partition table in the MBR (see parted and fdisk)
+\item 
+What kind of file system are we using.
+Why only ext2? Could we use something other format?
+What do we have to pay attention to? Think GRUB
+and Linux kernel.
+\item
+Look in the GRUB manual how to install GRUB manually.
+Explain the manual steps during the mkdist.sh.
+Explain why they are necessary. 
+\item
+Explain the loop-back setup with the Qemu disk.
+Why is it necessary? 
+\item 
+What are those files under /dev?
+What is their purpose? How are they created?
+\item 
+During the mkdist.sh, we boot Qemu twice in a row, 
+with a manual GRUB setup in between.
+What is going on? 
+Explain why we stop at the GRUB prompt the first time
+and why we get a GRUB menu the second time around.
+\item 
+Look at the GRUB menu and understand its structure.
+\item 
+Look at the linux kernel options in the GRUB menu.
+What are they for? Why use those options?
+Hint: console history, see the differences between
+booting Hello-RootFS and Hello-Disk.
+\item
+In your mini distribution, under /boot, you have
+several kernels. Regarding the 2.6.31.22-generic,
+what are the different files related to this version
+(System.map, config, and vmlinuz).
+\item
+Explain how the linux kernel boots with Hello-RootFS.
+Hint: initial ramdisk (initrd).
+\item
+Explain how the hello program can actually execute?
+Indeed, the mini distribution has no libraries.
+Hint: hello makefile.
+\item 
+Try replacing the kernel in the Hello-Disk configuration,
+from vmlinuz to vmlinuz-2.6.31-22-generic, what is happening?
+Why? Why is it working with vmlinuz.
+
+\end{enumerate}
+
+
+
+\section{Qemu}
+
+This section is here in case you learn some more stuff about Qemu.
+You will find plenty of information in the README-QEMU document.
+
+\section{MiniDist Script}
+
+You ask to read and explain the following script (mkdist.sh).
+
+\section{GRUB} 
+
+In the grub directory, you will have binary and the sources for
+grub-0.97, an older and much simpler GRUB version.
+
+You can find some relevant documentations in the docs directory,
+in particular the GRUB manual and a great explaination of QEMU disk
+images.
+
+\subsection{GRUB principles and stages}
+
+\begin{enumerate}
+\item
+Look at eltorito stage for CD-ROMs.
+\item
+Look at the various stages for a disk (stage1, stage1.5, stage2).
+\item
+Look in the GRUB manual how to install GRUB manually.
+\item 
+Look at GRUB menu.
+\end{enumerate}
+
+\subsubsection{Building GRUB}
+
+{\bf Do not rebuild GRUB}, unless you have to. You have been given 
+a working for x86\_32 (IA-32). 
+
+For your information, be warned that to build this version of GRUB, 
+you will need GCC-3.4. So you can install it on your system, via apt-get install.
+Let's assume you have downloaded your sources under ~/M2M/grub/grub-0.97
+in your dev guest. You can compile and install like this:
+
+{\em\small
+\begin{verbatim}
+        # export CC=gcc-3.4
+	# cd ~/M2M/grub/grub-0.97
+	# ./configure –prefix=~/M2M/grub/grub
+	# make
+	# make install 
+\end{verbatim}
+}
+
+Notice the important setup in the configure step
+where you specify a path where to install GRUB.
+Notice this is a local path to your home directory,
+{\bf DO NOT INSTALL IT ON YOUR MACHINE.}
+By default, it installs on /boot/grub
+and this is a really bad idea.
+
+\section{GRUB and Linux Boot Process}
+
+Look at what is going on in the /boot directory.
+The idea here is to be able to explain the boot process,
+starting with GRUB and ending with the linux kernel booting.
+
+You must understand the three options in the GRUB menu.
+
+\begin{enumerate}
+\item
+Hello - RootFS
+\item
+Hello - Disk
+\item
+Your Mini Distribution
+\end{enumerate}
+
+Each represents a different boot strategy.
+
+\section{Mini-Distribution}
+
+You are given this layout for your mini-distribution.
+{\em\small 
+\begin{verbatim}
+  MiniDist$ ls
+  bin  boot  dev  etc  hello  lib  root  sbin
+  MiniDist$
+\end{verbatim}
+}
+
+Explain each directory and each directory's contents.
+
+If you add anything, you will document what you add and why.
+
+\section{Laboratory Log}
+
+\end{document}

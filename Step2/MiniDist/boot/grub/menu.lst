@@ -1,0 +1,23 @@
+timeout 4
+
+title Hello - RootFS
+kernel /boot/vmlinuz-2.6.31-22-generic root=/dev/ram rdinit=/hello
+initrd /boot/initrd.hello
+
+title Hello - Disk
+kernel /boot/vmlinuz root=/dev/hda1 init=/hello console=ttyS0,115200n8 console=tty0
+boot
+
+title Your Mini Distribution
+kernel /boot/vmlinuz root=/dev/hda1 init=/init console=ttyS0,115200n8 console=tty0
+boot
+
+
+# Other possible options for the kernel command:
+# root=/dev/hdc 
+# init=/init
+# console=ttyS0,115200n8
+# console=tty0
+# showopts
+# noresume
+

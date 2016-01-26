@@ -1,0 +1,30 @@
+
+If all is well, you should not have to rebuild this GRUB.
+It has been compiled already for i386 architecture,
+and you should be able to use it with Qemu.
+
+Get the sources for the GRUB loader from GNU.
+Download Grub loader, version 0.97, 
+from ftp://alpha.gnu.org/gnu/grub/.
+Do not download the binaries that are not complete,
+missing the eltorito stage.
+
+I downloaded the GRUB loader and extracted the sources
+under ~/M2M/grub/grub-0.97. I will configure it to generate the
+binaries under ~/M2M/grub/grub, using the following commands 
+By default, it installs on /boot/grub
+and this is not a good idea.
+
+    $ cd ~/M2M/grub/grub-0.97
+    $ ./configure –prefix=~/M2M/grub/grub
+    $ make 
+    $ make install
+
+For more information about how to build the GRUB loader, 
+please read the README file. 
+
+WARNING: Last time I tried compiling it on Ubuntu,
+         I needed gcc 3.4 to make it work, otherwise
+         the objdump tool from binutils didn't strip
+	 the stage1 appropriately and it was bigger than 512 bytes.
+

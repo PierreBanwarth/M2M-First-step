@@ -1,0 +1,8 @@
+timeout 5
+gfxmenu (cd)/boot/message
+
+title Kernel 2.6.23.9-mini 
+    kernel (cd)/boot/vmlinuz noresume showopts
+    initrd (cd)/boot/initrd.cpio.gz
+
+# root=/dev/hdc vga=0x317 noresume splash=silent showopts
