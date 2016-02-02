@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.12.20)  26 JAN 2016 12:37
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.12.20)  2 FEB 2016 12:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -59,7 +59,7 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 LaTeX Warning: Unused global option(s):
     [10].
 
-No file WorkLog.aux.
+(./WorkLog.aux)
 \openout1 = `WorkLog.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 4.
@@ -74,7 +74,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 4.
 LaTeX Font Info:    ... okay on input line 4.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 4.
 LaTeX Font Info:    ... okay on input line 4.
-(/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+ (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count88
 \scratchdimen=\dimen105
@@ -151,35 +151,41 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (5.02849pt too wide) in paragraph at lines 113--116
+Overfull \hbox (1.40227pt too wide) in paragraph at lines 76--80
+[]\OT1/cmr/m/n/10 Understand the first boot op-tion of the GRUB menu (Hello - R
+ootFS).
+ []
+
+[2]
+Overfull \hbox (5.02849pt too wide) in paragraph at lines 154--157
 []\OT1/cmr/m/n/10 Explain how the linux ker-nel boots with Hello-RootFS. Hint: 
 ini-tial ramdisk
  []
 
-[2]
+[3]
 Missing character: There is no â in font cmtt9!
 Missing character: There is no € in font cmtt9!
 Missing character: There is no “ in font cmtt9!
- [3] [4] (./WorkLog.aux) ) 
+ [4] [5] [6] (./WorkLog.aux) ) 
 Here is how much of TeX's memory you used:
- 1509 strings out of 494999
- 21503 string characters out of 6180227
- 77255 words of memory out of 5000000
- 4734 multiletter control sequences out of 15000+600000
+ 1512 strings out of 494999
+ 21552 string characters out of 6180227
+ 77263 words of memory out of 5000000
+ 4735 multiletter control sequences out of 15000+600000
  9052 words of font info for 32 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 37i,6n,23p,235b,289s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on WorkLog.pdf (4 pages, 102351 bytes).
+ 37i,6n,23p,235b,189s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
+Output written on WorkLog.pdf (6 pages, 106458 bytes).
 PDF statistics:
- 45 PDF objects out of 1000 (max. 8388607)
- 31 compressed objects within 1 object stream
+ 51 PDF objects out of 1000 (max. 8388607)
+ 35 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

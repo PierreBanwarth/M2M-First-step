@@ -2,7 +2,7 @@
 \documentclass[10]{article}
 \usepackage{graphicx}
 \begin{document}
-\title{Step 1 - Work Log \\
+\title{Step 2 - Work Log \\
 M2M Lectures\\
 Grenoble University}
 \author{Your Names Here}
@@ -40,7 +40,7 @@ GRUB bootloader
 \item
 Linux kernel
 \item
-Core files and layout of a distribution.
+Distribution layout and core files
 \end{itemize}
 
 Many pieces are provided to you, pieces that you are asked to understand.
@@ -48,25 +48,66 @@ First, you are given a compiled, ready-to-use, boot loader (GRUB 0.97).
 Second, you are given a minimal distribution, with a linux kernel.
 
 You can build a Qemu disk with mkdist.sh sript, following the on-screen
-instructions, you can get to have a disk and boot Qemu with it.
+instructions. Once you have a disk, you can boot Qemu with it.
+When booting, you will get a GRUB menu, with several boot options,
+one is called ``Hello - RootFS''.
+Select that option and you will get something very similar 
+to what you did in step1, but using a real bootloader and a linux kernel.
 
-Select either of the hello options in the GRUB menu at boot time,
-and you will get something very similar to what you did in step1,
-but using a real bootloader and a linux kernel.
-
-After that, the learning process will start and it cannot be entirely 
-a linear process, sorry. So you will fill up the various sections
+After that, the learning process will start and it cannot be done entirely 
+as a linear process, sorry. So you will fill up the various sections
 incrementally, certainly in an order that will be a bit erratic.
 
 We suggest the following steps.
 
+\begin{enumerate}
+\item Bootable disk and GRUB
 \begin{itemize}
-\item Read and start understanding the script: mkdist.sh 
-\item Read about and understand the GRUB process
-\item Read about and understand the Linux kernel boot process,
-with and without an initial ramdisk (initrd).
-\item Understand the specifics of the hello program.
+\item Read and start understanding the script: mkdist.sh
+Explain each step, explaining the related concepts such as 
+the loopback mount, mknod files (character and block).
+\item Read about and understand the GRUB process and how it is
+installed on a disk and the GRUB boot stages.
+\item Read about and understand the GRUB menu given to you.
 \end{itemize}
+
+\item Hello - RootFS
+\begin{itemize}
+\item Understand the first boot option of the GRUB menu (Hello - RootFS).
+Which kernel boots? What is the role of initrd.hello? Look at the
+hello directory and how hello is compiled, linked, and the initrd.hello
+is constructed. Explain how it works and why.
+\item Read about and understand the purpose of initial ramdisks (initrd)
+for booting linux in general, on any machine.
+\end{itemize}
+
+\item Hello - Disk
+\begin{itemize}
+\item Read and understand the second boot option (Hello - Disk).
+What is different in the boot process? Explain how this process
+boots the linux kernel from the disk you created with mkdist.sh.
+\item Explain the two console options given to the kernel?
+Why are they useful? How do you exploit them when booting from Qemu?
+\item Why do we use a different kernel for this boot process?
+Instead of using the generic vmlinuz-2.6.31-22?
+\item Compare the different kernel configurations given to you:
+allnoconfig-2.6.32.65, miniconfig-2.6.32.65, m2m-config-2.6.32.65.
+(hint: compiling a linux kernel, make allnoconfig, make bzImage)
+(hint2: look at Section~\ref{sec:linux:kernel:config})
+
+\end{itemize}
+
+\item MiniDist Layout
+\begin{itemize}
+\item Dive into the given MiniDist and explain its layout,
+giving the purpose of the different directories.
+\item Explain the purpose of the few files in those directories.
+In particular the various files under /dev.
+\item What is missing for a realistic minidist?
+(hint: libraries, commands, shell, configuration files and scripts).
+\end{itemize}
+
+\end{enumerate}
 
 Here are a bunch of questions and points to help you progress
 and focus your attention.
@@ -90,7 +131,7 @@ Explain the loop-back setup with the Qemu disk.
 Why is it necessary? 
 \item 
 What are those files under /dev?
-What is their purpose? How are they created?
+What is their purpose? How are they created? (hint mkdnod)
 \item 
 During the mkdist.sh, we boot Qemu twice in a row, 
 with a manual GRUB setup in between.
@@ -158,8 +199,10 @@ Look at GRUB menu.
 
 \subsubsection{Building GRUB}
 
-{\bf Do not rebuild GRUB}, unless you have to. You have been given 
-a working for x86\_32 (IA-32). 
+{\bf --- THIS SECTION IS FOR YOUR INFORMATION ONLY --- },
+
+{\bf Do not rebuild GRUB}, unless you have to and you are damn sure. 
+You have been given a working for x86\_32 (IA-32). 
 
 For your information, be warned that to build this version of GRUB, 
 you will need GCC-3.4. So you can install it on your system, via apt-get install.
@@ -201,6 +244,43 @@ Your Mini Distribution
 \end{enumerate}
 
 Each represents a different boot strategy.
+
+\section{Linux Kernel Configurations}
+\label{sec:linux:kernel:config}
+
+You are given three configurations:
+
+\begin{enumerate}
+\item allnoconfig-2.6.32.65
+\item miniconfig-2.6.32.65
+\item m2m-config-2.6.32.65.
+\end{enumerate}
+
+All three for the version 2.6.32.65 of the linux kernel.
+
+The all-no-config is generated with the ``make allnoconfig''
+from a kernel source directory. It corresponds to the absolutely
+smallest linux kernel, with all optional code turned off,
+but it is no longer functional.
+
+The mini-config is a functional kernel, corresponding to the
+kernel given in the MiniDist, called vmlinuz. You are asked
+to compare and explain the differences between the all-no-config
+and the mini-config. 
+
+\noindent (hint: a usefull program for this is called meld.)
+
+\noindent (hint: the differences are related to the minimal
+hardware support, like adding a pci bus support).
+
+Then you are asked to do the same between the mini-config
+and the m2m-config. The m2m-config is intended for a kernel
+specifically compiled for our target distribution: small,
+booting directly from disk, and with network connectivity.
+
+You are asked the Qemu configuration that would correspond
+to booting this kernel. (hint: look at README-QEMU).
+
 
 \section{Mini-Distribution}
 
