@@ -1,0 +1,142 @@
+#!/bin/sh
+
+[ -d /dev ] || mkdir -m 0755 /dev
+[ -d /root ] || mkdir -m 0700 /root
+[ -d /sys ] || mkdir /sys
+[ -d /proc ] || mkdir /proc
+[ -d /tmp ] || mkdir /tmp
+mkdir -p /var/lock
+mount -t sysfs -o nodev,noexec,nosuid none /sys 
+mount -t proc -o nodev,noexec,nosuid none /proc 
+
+[ -e /dev/tty0 ] || mknod /dev/tty0 c 4 0
+[ -e /dev/tty1 ] || mknod /dev/tty1 c 4 1
+[ -e /dev/sr0 ] || mknod /dev/sr0 b 11 0
+[ -e /dev/sda ] || mknod /dev/sda b 8 0
+[ -e /dev/sda1 ] || mknod /dev/sda1 b 8 1
+[ -e /dev/sda2 ] || mknod /dev/sda2 b 8 2
+[ -e /dev/hda ] || mknod /dev/hda b 3 0
+[ -e /dev/hda1 ] || mknod /dev/hda1 b 3 1
+[ -e /dev/hda2 ] || mknod /dev/hda2 b 3 2
+[ -e /dev/cdrom ] || ln  -s /dev/sr0 /dev/cdrom
+[ -e /dev/console ] || mknod -m 0600 /dev/console c 5 1
+[ -e /dev/null ] || mknod /dev/null c 1 3
+[ -e /dev/zero ] || mknod /dev/zero c 1 5
+
+[ -d /etc ] || mkdir -m 0700 /etc
+[ -e /etc/mtab ] || touch /etc/mtab
+
+PATH=.:/bin:/sbin
+mount -t iso9660 /dev/sr0 /cdrom
+
+# See https://felipec.wordpress.com/2009/12/27/setting-up-qemu-with-a-nat/
+# for a nice explaination of how to use a TAP to bridge a QEMU,
+# much simpler for me to understand than the TUN...
+# Permits ping, which is an easy way to test that it works.
+# Plus it works like a charm, try:
+#    $ ping -c 5 180.125.73.108
+#
+#modprobe e1000
+#ifconfig eth0 10.0.2.15 netmask 255.255.255.0 up
+#route add default gw 10.0.2.2
+
+ifconfig eth0 192.168.100.2 netmask 255.255.255.0 up
+route add default gw 192.168.100.1
+
+echo "Given kernel options: "
+echo "  " `cat /proc/cmdline`
+echo "Have fun now, it's safe..."
+
+# The following works:
+#   /bin/sh
+# or we may even use 
+#   exec /bin/sh
+#
+# However, since the shell is launched on the console,
+# it is not a controlling terminal (tty), as setup by 
+# the regular Linux kernel.
+# See http://www.linusakesson.net/programming/tty/ for a quite
+# complete explaination and history overview.
+# See https://groups.google.com/forum/#!topic/comp.os.linux.embedded/o6XoHvhQ804
+# Have a look at this code in drivers/char/tty_io.c:
+#         if (device == SYSCONS_DEV) {
+#                 struct console *c = console_drivers;
+#                 while(c && !c->device)
+#                         c = c->next;
+#                 if (!c)
+#                         return -ENODEV;
+#                 device = c->device(c);
+#                 filp->f_flags |= O_NONBLOCK; /* Don't let /dev/console block */
+#                 noctty = 1;
+#         }
+# See that it sets noctty=1; when it is the system console...
+# so we do not get the ability to ^C any program in this /dev/tty0
+
+# A solution, found on the web
+# http://lists.uclibc.org/pipermail/busybox/2010-June/072731.html
+# the idea is to exec a new shell, in a new session (setsid)
+# and make it use /dev/tty1 which is not the Kernel console
+# And it works!
+exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
+#exec setsid sh
+#exec </dev/tty1 >/dev/tty1 2>&1
+#exec sh
+
+echo "Bye now."
+exit
+
+############################################################
+## THE FOLLOWING MAY BE NECESSARY ON THE FINAL SYSTEM
+############################################################
+
+#====================================
+# Parse command line options
+#====================================
+for x in $(cat /proc/cmdline); do
+ case $x in
+   init=*)
+     init=${x#init=}
+     ;;
+   root=*)
+     ROOT=${x#root=}
+     ;;
+   quiet)
+     quiet=y
+     ;;
+   ro)
+     readonly=y
+     ;;
+   rw)
+     readonly=n
+     ;;
+ esac
+done
+
+#========================================
+# UDEV 
+#========================================
+
+# Note that this only becomes /dev on the real filesystem if udev's scripts
+# are used; which they will be, but it's worth pointing out
+if ! mount -t devtmpfs -o mode=0755 none /dev; then
+	mount -t tmpfs -o mode=0755 none /dev
+	mknod -m 0600 /dev/console c 5 1
+	mknod /dev/null c 1 3
+fi
+mkdir /dev/pts
+mount -t devpts -o noexec,nosuid,gid=5,mode=0620 none /dev/pts || true
+> /dev/.initramfs-tools
+mkdir /dev/.initramfs
+
+# It's all over netlink now
+echo "" > /proc/sys/kernel/hotplug
+	
+# Start the udev daemon to process events
+/sbin/udevd --daemon --resolve-names=never
+
+# Iterate sysfs and fire off everything; if we include a rule for it then
+# it'll get handled; otherwise it'll get handled later when we do this again
+# in the main boot sequence.
+( /sbin/udevadm trigger --subsystem-match=block; \
+  /sbin/udevadm trigger --subsystem-nomatch=block; ) &
+
